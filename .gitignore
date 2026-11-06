@@ -1,0 +1,29 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches & Environments
+.venv/
+venv/
+env/
+.cache/
+.pytest_cache/
+.ruff_cache/
+
+# Model checkpoints & large binary artifacts
+*.safetensors
+*.bin
+*.pt
+shivalipi_checkpoints/
+shivalipi_model/
+test_modi.png
+
+# Build & Distribution
+build/
+dist/
+*.egg-info/
+
+# OS Specific
+.DS_Store
+Thumbs.db

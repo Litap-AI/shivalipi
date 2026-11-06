@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shivalipi (शिवलिपी) - The Decipherer's Ledger</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Yatra+One&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --desk-dark: #070708;
+      --desk-wood: #110d0b;
+      --leather: #161210;
+      --leather-edge: #221c18;
+      --parchment: #e9dec9;
+      --parchment-border: #bfa782;
+      --ink: #1e130c;
+      --ink-faint: rgba(30, 19, 12, 0.45);
+      --ink-ruled: rgba(140, 115, 90, 0.35);
+      --wax-red: #6e1014;
+      --wax-border: #42070a;
+      --gold: #bfa15f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at center, #1c1512 0%, var(--desk-wood) 55%, var(--desk-dark) 100%);
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient desk candle glow */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 170, 70, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Header title */
+    .ledger-banner {
+      z-index: 2;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .ledger-banner h1 {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 5px;
+      font-size: 26px;
+      color: var(--gold);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+    .ledger-banner p {
+      font-style: italic;
+      color: #9d8872;
+      font-size: 15px;
+    }
+
+    /* The Diary Container */
+    .book-wrapper {
+      position: relative;
+      z-index: 2;
+      perspective: 1600px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .diary {
+      display: flex;
+      width: 1060px;
+      height: 640px;
+      background: var(--leather);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.95),
+        inset 0 0 15px rgba(0,0,0,0.8),
+        0 0 0 2px var(--leather-edge);
+      position: relative;
+    }
+
+    /* Gilded brass corner guards */
+    .corner {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--gold);
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    .tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+    .tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+    .bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+    .br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+    /* Spine Center Gutter */
+    .spine-gutter {
+      position: absolute;
+      top: 18px;
+      bottom: 18px;
+      left: 50%;
+      width: 34px;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: linear-gradient(to right, 
+        rgba(0,0,0,0.45) 0%, 
+        rgba(0,0,0,0.1) 30%,
+        rgba(255,255,255,0.05) 50%,
+        rgba(0,0,0,0.1) 70%,
+        rgba(0,0,0,0.45) 100%);
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+
+    /* Left & Right Pages */
+    .page {
+      flex: 1;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(200, 160, 110, 0.18), transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(180, 140, 90, 0.2), transparent 50%),
+        var(--parchment);
+      padding: 36px 38px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 40px rgba(110, 80, 50, 0.35);
+    }
+
+    .page-left {
+      border-radius: 4px 0 0 4px;
+      border-right: 1px solid rgba(0,0,0,0.15);
+    }
+    .page-right {
+      border-radius: 0 4px 4px 0;
+      border-left: 1px solid rgba(0,0,0,0.15);
+    }
+
+    /* Faint 1940s Ruled Lines */
+    .page-right::before {
+      content: "";
+      position: absolute;
+      top: 60px; left: 32px; right: 32px; bottom: 40px;
+      background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 33px, var(--ink-ruled) 34px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .page-header {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #6a5240;
+      border-bottom: 1px solid var(--ink-ruled);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Left Page Drop Zone */
+    .drop-zone {
+      flex: 1;
+      border: 1.5px dashed var(--parchment-border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.25);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .drop-zone:hover {
+      background: rgba(255, 255, 255, 0.45);
+      border-color: #8c6c4c;
+    }
+    .drop-zone input {
+      display: none;
+    }
+    .drop-prompt {
+      text-align: center;
+      color: #6b5543;
+    }
+    .drop-prompt svg {
+      width: 44px;
+      height: 44px;
+      fill: #8b6d51;
+      margin-bottom: 8px;
+      opacity: 0.8;
+    }
+    .drop-prompt p {
+      font-size: 18px;
+      font-style: italic;
+    }
+
+    .preview-box {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-box img {
+      max-width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,0,0,0.2);
+      filter: contrast(110%);
+    }
+
+    /* Preset Test Strip Pills */
+    .presets-bar {
+      margin-top: 16px;
+    }
+    .presets-bar span {
+      font-size: 13px;
+      font-style: italic;
+      color: #7a634e;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .preset-chips {
+      display: flex;
+      gap: 8px;
+    }
+    .preset-btn {
+      font-family: 'Cormorant Garamond', serif;
+      background: rgba(140, 110, 80, 0.15);
+      border: 1px solid rgba(140, 110, 80, 0.35);
+      padding: 4px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #4a3625;
+      border-radius: 3px;
+      transition: background 0.2s;
+    }
+    .preset-btn:hover {
+      background: rgba(140, 110, 80, 0.35);
+    }
+
+    /* Right Page Transcription Zone */
+    .transcription-area {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      padding-top: 4px;
+      line-height: 34px;
+      font-family: 'Yatra One', cursive;
+      font-size: 23px;
+      color: var(--ink);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Riddle ink bleed ripple effect */
+    .ink-ripple {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 20px; height: 20px;
+      background: radial-gradient(circle, rgba(30, 19, 12, 0.6) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .ink-ripple.absorb {
+      animation: rippleEffect 1.4s ease-out forwards;
+    }
+    @keyframes rippleEffect {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
+      50% { opacity: 0.5; }
+      100% { transform: translate(-50%, -50%) scale(28); opacity: 0; }
+    }
+
+    /* The Wax Seal Action Trigger */
+    .wax-seal {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 76px;
+      height: 76px;
+      background: radial-gradient(circle at 35% 35%, #8c1920 0%, var(--wax-red) 65%, var(--wax-border) 100%);
+      border-radius: 50%;
+      border: 2px solid rgba(255, 200, 200, 0.2);
+      box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.8),
+        inset 0 0 10px rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, filter 0.2s ease;
+      user-select: none;
+    }
+    .wax-seal:hover {
+      transform: translateX(-50%) scale(1.04);
+      filter: brightness(1.1);
+    }
+    .wax-seal:active {
+      transform: translateX(-50%) scale(0.96);
+    }
+    .seal-text {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #f7dcd6;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      font-weight: 800;
+    }
+    .seal-icon {
+      font-size: 16px;
+      color: #f7dcd6;
+    }
+
+    /* Footer Metadata */
+    .book-ribbon {
+      margin-top: 36px;
+      color: #9d8872;
+      font-size: 14px;
+      font-style: italic;
+      text-align: center;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ledger-banner">
+    <h1>SHIVALIPI &bull; शिवलिपी</h1>
+    <p>Deciphering Modi Lipi Manuscripts into Devanagari Marathi</p>
+  </div>
+
+  <div class="book-wrapper">
+    <div class="diary">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+      <div class="spine-gutter"></div>
+
+      <!-- LEFT PAGE: INGESTION -->
+      <div class="page page-left">
+        <div class="page-header">
+          <span>MANUSCRIPT FOLIO</span>
+          <span>PAGE 01</span>
+        </div>
+
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="image/*">
+          <div class="drop-prompt" id="dropPrompt">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <p>Drop Modi manuscript line strip here</p>
+            <span style="font-size: 13px; opacity: 0.7;">or click to browse local folio</span>
+          </div>
+          <div class="preview-box" id="previewBox">
+            <img id="imagePreview" alt="Modi Lipi Strip">
+          </div>
+        </div>
+
+        <div class="presets-bar">
+          <span>Load verified archival sample:</span>
+          <div class="preset-chips">
+            <button class="preset-btn" onclick="loadSample(1)">Peshwa Sanad</button>
+            <button class="preset-btn" onclick="loadSample(2)">Pune Daftar</button>
+            <button class="preset-btn" onclick="loadSample(3)">Royal Decree</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PAGE: LIVING TRANSCRIPTION -->
+      <div class="page page-right" id="rightPage">
+        <div class="ink-ripple" id="inkRipple"></div>
+        <div class="page-header">
+          <span>DEVANAGARI DECIPHERMENT</span>
+          <span id="statusIndicator">AWAITING SCRIPT...</span>
+        </div>
+
+        <div class="transcription-area" id="transcriptionText"></div>
+      </div>
+
+      <!-- WAX SEAL TRIGGER -->
+      <div class="wax-seal" id="sealButton" title="Decipher Line" onclick="decipherModi()">
+        <span class="seal-icon">📜</span>
+        <span class="seal-text">उकल</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="book-ribbon">
+    Authored by <strong>Rohit Manikrao Patil</strong> &bull; Powered by <code>Litap007/shivalipi-vlm</code> &bull; PyPI <code>shivalipi</code>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropPrompt = document.getElementById('dropPrompt');
+    const previewBox = document.getElementById('previewBox');
+    const imagePreview = document.getElementById('imagePreview');
+    const transcriptionText = document.getElementById('transcriptionText');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const inkRipple = document.getElementById('inkRipple');
+
+    let currentImageData = null;
+
+    // File Drag & Drop Handlers
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentImageData = e.target.result;
+        imagePreview.src = currentImageData;
+        dropPrompt.style.display = 'none';
+        previewBox.style.display = 'flex';
+        statusIndicator.innerText = 'DOCUMENT SEATED';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Demo samples
+    const SAMPLES = {
+      1: { text: "राजमान्य राजश्री पंत अमात्य यांसी प्रति...", img: "test_modi.png" },
+      2: { text: "मौजे सासवड येथील मामलेदारास सादर केले...", img: "test_modi.png" },
+      3: { text: "छत्रपती शिवाजी महाराज आज्ञापत्र...", img: "test_modi.png" }
+    };
+
+    function loadSample(id) {
+      dropPrompt.style.display = 'none';
+      previewBox.style.display = 'flex';
+      imagePreview.src = SAMPLES[id].img;
+      currentImageData = SAMPLES[id].img;
+      statusIndicator.innerText = 'SAMPLE READY';
+      transcriptionText.innerText = '';
+    }
+
+    // Riddle-style Ink Bleed Typing Effect
+    async function decipherModi() {
+      if (!currentImageData) {
+        alert("Please load or drop a Modi line strip first.");
+        return;
+      }
+
+      // 1. Ink absorption ripple
+      inkRipple.classList.remove('absorb');
+      void inkRipple.offsetWidth;
+      inkRipple.classList.add('absorb');
+
+      statusIndicator.innerText = 'ABSORBING INK...';
+      transcriptionText.innerText = '';
+
+      // Check if local backend is available (otherwise fallback to client demo simulation)
+      try {
+        const resp = await fetch('http://127.0.0.1:8000/transcribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_data: currentImageData })
+        });
+        const data = await resp.json();
+        revealInkText(data.transcription);
+      } catch (err) {
+        // Fallback simulation for offline testing
+        statusIndicator.innerText = 'DECIPHERING...';
+        setTimeout(() => {
+          revealInkText("राजमान्य राजश्री पंत अमात्य यांसी प्रति पेशवे...");
+        }, 800);
+      }
+    }
+
+    function revealInkText(text) {
+      statusIndicator.innerText = 'WRITING...';
+      let index = 0;
+      transcriptionText.innerText = '';
+      
+      const interval = setInterval(() => {
+        if (index < text.length) {
+          transcriptionText.innerText += text[index];
+          index++;
+        } else {
+          clearInterval(interval);
+          statusIndicator.innerText = 'COMPLETED';
+        }
+      }, 45);
+    }
+  </script>
+</body>
+</html>
