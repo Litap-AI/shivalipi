@@ -74,7 +74,8 @@ Developed and maintained by Rohit Manikrao Patil
 
 Website: www.rohitmanikraopatil.com
 
-GitHub: (https://github.com/Litap-AI/shivalipi)
+PyPI project: https://pypi.org/project/shivalipi/
+
 
 ---
 
